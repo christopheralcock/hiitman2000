@@ -10,7 +10,6 @@
         color: green;
     }
     #readyClock {
-
       font-size: 150px;
     }
 
@@ -93,12 +92,16 @@ workoutLength = 20*60000;
     beep();
 
   }, (workoutLength + segmentLength));
+
   setTimeout(function(){ percentageDone() }, segmentLength);
   percentage = 0;
+
   function percentageDone(){
+    document.getElementById("percentageDone").innerHTML = percentage +"% complete";
+
     setInterval(function(){
-      document.getElementById("percentageDone").innerHTML = percentage +"% complete";
       percentage++;
+      document.getElementById("percentageDone").innerHTML = percentage +"% complete";
     },
     (workoutLength/100)
   );
