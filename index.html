@@ -18,24 +18,21 @@
 </head>
 <body>
   <h1>HIITMAN 2000: THE SINGLE MOST ADVANCED HIIT WEBSITE</h1>
-
-
-
-
-  <div id=complete>
-  <div id=currentExercise>
+    <div id=complete>
+    <div id=currentExercise>
+    </div>
+    <div id=break>
+    </div>
+    <div id=readyClock>
+    </div>
+    <div id=percentageDone>
   </div>
-  <div id=break>
-  </div>
-  <div id=readyClock>
-  </div>
-</div>
 
-<p>example params: ?segmentLength=1&exerciseLength=0.5&workoutLength=20&exercises=Mountain%20Climber,Squatty%20Floor%20Touch,Snakey%20Dog%20Pressups,Punchy%20Boys,High%20Knees!!</p>
-<p>segmentLength: in minutes, how often you want to start a new exercise</p>
-<p>exerciseLength: in minutes, how long you want each bit of excercise to last</p>
-<p>workoutLength: in minutes, how long you want the session to last</p>
-<p>exercises: a comma separate list of the names of the exercises you want to do</p>
+  <p>example params: <a href="?e=squats,press-ups,sit-ups,skipping+rope&t=0.5&b=0.5&w=20">?e=squats,press-ups,sit-ups,skipping+rope&t=0.5&b=0.5&w=20</a></p>
+  <p>e: a comma separated list of the names of the exercises you want to do, eg squats,press-ups,sit-ups,skipping rope</p>
+  <p>t: in minutes, how long you want each bit of excercise to last, eg 0.5</p>
+  <p>b: in minutes, how long you want each break between exercise to last, eg 0.5</p>
+  <p>w: in minutes, how long you want the session to last, eg 20</p>
 
 
   <script>
@@ -45,22 +42,24 @@
 var url = new URL(url_string);
 
 todayExercises = ["Mountain Climber","Squatty Floor Touch","Snakey Dog Pressups","Punchy Boys","High Knees!!"];
-segmentLength = 60000;
+breakLength = 30000;
 exerciseLength = 30000;
 workoutLength = 20*60000;
-  if (url.searchParams.get("exercises")){
-    todayExercises = url.searchParams.get("exercises").split(",");
+  if (url.searchParams.get("e")){
+    todayExercises = url.searchParams.get("e").split(",");
   }
-  if (url.searchParams.get("segmentLength")){
-    segmentLength = url.searchParams.get("segmentLength")*60000;
-  }
-  if (url.searchParams.get("exerciseLength")){
-   exerciseLength = url.searchParams.get("exerciseLength")*60000;
-  }
-  if (url.searchParams.get("workoutLength")){
-    workoutLength = url.searchParams.get("workoutLength")*60000;
+  if (url.searchParams.get("b")){
+    breakLength = url.searchParams.get("b")*60000;
   }
 
+  if (url.searchParams.get("t")){
+   exerciseLength = url.searchParams.get("t")*60000;
+  }
+  segmentLength = breakLength + exerciseLength;
+
+  if (url.searchParams.get("w")){
+    workoutLength = url.searchParams.get("w")*60000;
+  }
 
   document.getElementById("currentExercise").innerHTML = "welcome! up next: "+todayExercises[0]+ " in:";
   document.getElementById("readyClock").innerHTML = segmentLength/1000;
@@ -93,21 +92,28 @@ workoutLength = 20*60000;
     document.getElementById("complete").innerHTML = "WORKOUT COMPLETE!";
     beep();
 
-  }, workoutLength);
+  }, (workoutLength + segmentLength));
+  setTimeout(function(){ percentageDone() }, segmentLength);
+  percentage = 0;
+  function percentageDone(){
+    setInterval(function(){
+      document.getElementById("percentageDone").innerHTML = percentage +"%";
+      percentage++;
+    },
+    (workoutLength/100)
+  );
+
+  }
   function beep() {
     var startTime = audioContext.currentTime;
     var endTime = startTime + 0.5;
     var oscillator = audioContext.createOscillator();
     oscillator.connect(audioContext.destination);
-
-
     oscillator.type = "square";
     oscillator.start(startTime);
     oscillator.stop(endTime);
 
 };
-
-
 
   </script>
 </body>
