@@ -1,0 +1,113 @@
+<head>
+  <style>
+    div {
+        font-size: 50px;
+    }
+    #currentExercise {
+        color: blue;
+    }
+    #break {
+        color: green;
+    }
+    #readyClock {
+
+      font-size: 150px;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>HIITMAN 2000: THE SINGLE MOST ADVANCED HIIT WEBSITE</h1>
+
+
+
+
+  <div id=complete>
+  <div id=currentExercise>
+  </div>
+  <div id=break>
+  </div>
+  <div id=readyClock>
+  </div>
+</div>
+
+<p>example params: ?segmentLength=1&exerciseLength=0.5&workoutLength=20&exercises=Mountain%20Climber,Squatty%20Floor%20Touch,Snakey%20Dog%20Pressups,Punchy%20Boys,High%20Knees!!</p>
+<p>segmentLength: in minutes, how often you want to start a new exercise</p>
+<p>exerciseLength: in minutes, how long you want each bit of excercise to last</p>
+<p>workoutLength: in minutes, how long you want the session to last</p>
+<p>exercises: a comma separate list of the names of the exercises you want to do</p>
+
+
+  <script>
+  audioContext = new AudioContext();
+
+  var url_string = window.location.href
+var url = new URL(url_string);
+
+todayExercises = ["Mountain Climber","Squatty Floor Touch","Snakey Dog Pressups","Punchy Boys","High Knees!!"];
+segmentLength = 60000;
+exerciseLength = 30000;
+workoutLength = 20*60000;
+  if (url.searchParams.get("exercises")){
+    todayExercises = url.searchParams.get("exercises").split(",");
+  }
+  if (url.searchParams.get("segmentLength")){
+    segmentLength = url.searchParams.get("segmentLength")*60000;
+  }
+  if (url.searchParams.get("exerciseLength")){
+   exerciseLength = url.searchParams.get("exerciseLength")*60000;
+  }
+  if (url.searchParams.get("workoutLength")){
+    workoutLength = url.searchParams.get("workoutLength")*60000;
+  }
+
+
+  document.getElementById("currentExercise").innerHTML = "welcome! up next: "+todayExercises[0]+ " in:";
+  document.getElementById("readyClock").innerHTML = segmentLength/1000;
+  setInterval(countDown, 1000);
+  function countDown(){
+    previousCount = document.getElementById("readyClock").innerHTML;
+    newCount = previousCount - 1;
+        document.getElementById("readyClock").innerHTML=newCount;
+  }
+  setInterval(function(){
+    document.getElementById("readyClock").innerHTML=exerciseLength/1000;
+
+    lastExercise = document.getElementById("currentExercise").innerHTML;
+    lastExerciseIndex = todayExercises.indexOf(lastExercise);
+    newExerciseIndex = (lastExerciseIndex + 1) % todayExercises.length;
+    nextExerciseIndex = (newExerciseIndex + 1) % todayExercises.length;
+    beep();
+    setTimeout(function(){
+      document.getElementById("break").innerHTML = "BREAK!! up next: "+todayExercises[nextExerciseIndex];
+      beep();
+      document.getElementById("readyClock").innerHTML=(segmentLength-exerciseLength)/1000;
+
+    },exerciseLength)
+    setTimeout(function(){
+      document.getElementById("break").innerHTML = "";
+    },segmentLength)
+    document.getElementById("currentExercise").innerHTML = todayExercises[newExerciseIndex];
+  }, segmentLength);
+  setTimeout(function(){
+    document.getElementById("complete").innerHTML = "WORKOUT COMPLETE!";
+    beep();
+
+  }, workoutLength);
+  function beep() {
+    var startTime = audioContext.currentTime;
+    var endTime = startTime + 0.5;
+    var oscillator = audioContext.createOscillator();
+    oscillator.connect(audioContext.destination);
+
+
+    oscillator.type = "square";
+    oscillator.start(startTime);
+    oscillator.stop(endTime);
+
+};
+
+
+
+  </script>
+</body>
