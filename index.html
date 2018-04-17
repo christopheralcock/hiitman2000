@@ -9,28 +9,40 @@
     #break {
         color: green;
     }
-    #readyClock {
-      font-size: 150px;
+    #clock {
+      font-size: 200px;
+    }
+    p {
+      font-size: 15px;
+    }
+    h1 {
+      font-size: 50px;
+    }
+    body {
+      text-align: center;
     }
 
   </style>
 </head>
 <body>
-  <h1>HIITMAN 2000: THE SINGLE MOST ADVANCED HIIT WEBSITE</h1>
+  <h1>HIITMAN 2000:</h1>
+<h2>THE SINGLE MOST ADVANCED HIIT WEBSITE</h2>
     <div id=complete>
     <div id=currentExercise>
+      You seem to be using a rubbish browser and/or an iPhone. This website won't make any sense, sorry. Working on it, a bit, maybe.
+
     </div>
     <div id=break>
     </div>
-    <div id=readyClock>
+    <div id=clock>
     </div>
     <div id=percentageDone>
   </div>
 
-  <p>example params: <a href="?e=squats,press-ups,sit-ups,skipping+rope&t=0.5&b=0.5&w=20">?e=squats,press-ups,sit-ups,skipping+rope&t=0.5&b=0.5&w=20</a></p>
+  <p>example params: <a href="?e=squats,press-ups,sit-ups,skipping+rope&t=30&b=30&w=20">?e=squats,press-ups,sit-ups,skipping+rope&t=30&b=30&w=20</a></p>
   <p>e: a comma separated list of the names of the exercises you want to do, eg squats,press-ups,sit-ups,skipping rope</p>
-  <p>t: in minutes, how long you want each bit of excercise to last, eg 0.5</p>
-  <p>b: in minutes, how long you want each break between exercise to last, eg 0.5</p>
+  <p>t: in seconds, how long you want each bit of excercise to last, eg 30</p>
+  <p>b: in seconds, how long you want each break between exercise to last, eg 30</p>
   <p>w: in minutes, how long you want the session to last, eg 20</p>
 
 
@@ -48,28 +60,27 @@ workoutLength = 20*60000;
     todayExercises = url.searchParams.get("e").split(",");
   }
   if (url.searchParams.get("b")){
-    breakLength = url.searchParams.get("b")*60000;
+    breakLength = url.searchParams.get("b")*1000;
   }
 
   if (url.searchParams.get("t")){
-   exerciseLength = url.searchParams.get("t")*60000;
+   exerciseLength = url.searchParams.get("t")*1000;
   }
   segmentLength = breakLength + exerciseLength;
 
   if (url.searchParams.get("w")){
     workoutLength = url.searchParams.get("w")*60000;
   }
-
-  document.getElementById("currentExercise").innerHTML = "welcome! up next: "+todayExercises[0]+ " in:";
-  document.getElementById("readyClock").innerHTML = segmentLength/1000;
+  document.getElementById("currentExercise").innerHTML = "Welcome! Stretch a bit and get ready!\r Up first: "+todayExercises[0]+ " in:";
+  document.getElementById("clock").innerHTML = segmentLength/1000;
   setInterval(countDown, 1000);
   function countDown(){
-    previousCount = document.getElementById("readyClock").innerHTML;
+    previousCount = document.getElementById("clock").innerHTML;
     newCount = previousCount - 1;
-        document.getElementById("readyClock").innerHTML=newCount;
+        document.getElementById("clock").innerHTML=newCount;
   }
   setInterval(function(){
-    document.getElementById("readyClock").innerHTML=exerciseLength/1000;
+    document.getElementById("clock").innerHTML=exerciseLength/1000;
 
     lastExercise = document.getElementById("currentExercise").innerHTML;
     lastExerciseIndex = todayExercises.indexOf(lastExercise);
@@ -79,7 +90,7 @@ workoutLength = 20*60000;
     setTimeout(function(){
       document.getElementById("break").innerHTML = "BREAK!! up next: "+todayExercises[nextExerciseIndex];
       beep();
-      document.getElementById("readyClock").innerHTML=(segmentLength-exerciseLength)/1000;
+      document.getElementById("clock").innerHTML=(segmentLength-exerciseLength)/1000;
 
     },exerciseLength)
     setTimeout(function(){
