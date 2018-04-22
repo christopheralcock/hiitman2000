@@ -1,7 +1,6 @@
 <!--
 
 features to come:
-  actual ui instead of params to try and get this working on iphonefor consistent experience on all browsers
   move away from setInterval entirely and towards webworker https://stackoverflow.com/questions/5927284/how-can-i-make-setinterval-also-work-when-a-tab-is-inactive-in-chrome
   robot voice or your own voice clips to say the messages
   choose how many pips (and set pips lower if people do super short exercises)
@@ -30,68 +29,100 @@ features to come:
     body {
       text-align: center;
     }
+    input {
+      width: 100%;
+      font-size: 40px;
+
+  }
+
 
   </style>
 </head>
 <body>
-  <h1>HIITMAN 2000:</h1>
-  <h2>THE SINGLE MOST ADVANCED HIIT WEBSITE</h2>
-  <button type="button" id="startPause">START</button>
-
+  <h1>HIITMAN 2000</h1>
 
   <div id=message>
     Welcome
   </div>
+
+  <form id="parameters">
+    Exercises:
+    <br>
+    <input type="text" id="exercises" value="Mountain Climber,Floor Touch Squats,Snake Pressups,Punches,High Knees">
+    <br>
+    Seconds per exercise:
+    <br>
+    <input type="text" id="exerciseLength" value="30">
+    <br>
+    Seconds per break:
+    <br>
+    <input type="text" id="breakLength" value="30">
+    <br>
+    Length of whole workout in minutes:
+    <br>
+    <input type="text" id="workoutLength" value="20">
+    <br>
+  </form>
+
+  <button type="button" id="startPause">START</button>
+
   <div id=clock>
   </div>
   <div id=percentageDone>
   </div>
 
 
-  <p>example params: <a href="?e=squats,press-ups,sit-ups,skipping+rope&t=30&b=30&w=20">?e=squats,press-ups,sit-ups,skipping+rope&t=30&b=30&w=20</a></p>
-  <p>e: a comma separated list of the names of the exercises you want to do, eg squats,press-ups,sit-ups,skipping rope</p>
-  <p>t: in seconds, how long you want each bit of excercise to last, eg 30</p>
-  <p>b: in seconds, how long you want each break between exercise to last, eg 30</p>
-  <p>w: in minutes, how long you want the session to last, eg 20</p>
+  <p>Presets (won't work on iPhone):
+    <a href="?e=Mountain Climber,Floor Touch Squats,Snake Pressups,Punches,High Knees&t=35&b=27&w=20">1</a>,
+    <a href="?e=squats,press-ups,sit-ups,skipping+rope&t=40&b=20&w=20">2</a>,
+    <a href="?e=run on the spot,jumping jacks,planks&t=40&b=20&w=30">3</a>
+  </p>
 
   <script type="text/javascript" src="https://tonejs.github.io/build/Tone.min.js"></script>
 
 
 <script>
-    var url = new URL(window.location.href);
-    todayExercises = ["Mountain Climber","Squatty Floor Touch","Snakey Dog Pressups","Punchy Boys","High Knees!!"];
-    breakLength = 30;
-    exerciseLength = 30;
-    workoutLength = 20*60;
+
     safariIndex = navigator.userAgent.indexOf("Safari");
     if(safariIndex === 125 || safariIndex === 131 || safariIndex === 102){
       console.log("i haven't worked out how to get url params for this browser");
     }
     else{
-      url.searchParams.get("e") ? todayExercises = url.searchParams.get("e").split(",") : null;
-      url.searchParams.get("b") ? breakLength = parseInt(url.searchParams.get("b")) : null;
-      url.searchParams.get("t") ? exerciseLength = parseInt(url.searchParams.get("t")) : null;
-      url.searchParams.get("w") ? workoutLength = parseInt(parseFloat(url.searchParams.get("w"))*60) : null;
+      url = new URL(window.location.href);
+      url.searchParams.get("e") ? document.getElementById("exercises").value = url.searchParams.get("e") : null;
+      url.searchParams.get("b") ? document.getElementById("breakLength").value = url.searchParams.get("b") : null;
+      url.searchParams.get("t") ? document.getElementById("exerciseLength").value = url.searchParams.get("t") : null;
+      url.searchParams.get("w") ? document.getElementById("workoutLength").value = url.searchParams.get("w") : null;
     }
-    segmentLength = breakLength + exerciseLength;
-    initialCountDown = 5;
-    absoluteLength = workoutLength + initialCountDown;
-    secondsForAllocation = absoluteLength;
+
+    function setWorkoutParameters(){
+      todayExercises = document.getElementById("exercises").value.split(",");
+      exerciseLength = parseInt(document.getElementById("exerciseLength").value);
+      breakLength = parseInt(document.getElementById("breakLength").value);
+      workoutLength = parseInt(parseFloat(document.getElementById("workoutLength").value)*60);
+      segmentLength = breakLength + exerciseLength;
+      initialCountDown = 5;
+      absoluteLength = workoutLength + initialCountDown;
+      secondsForAllocation = absoluteLength;
+    }
+
     exerciseIndex = 0;
     exerciseCounter = 0;
 
     events = {};
-    setStart();
-    setTheMeat();
-    setEnd();
-    console.log(events);
+    function setEvents(){
+      setStart();
+      setTheMeat();
+      setEnd();
+      console.log(events);
+    }
 
     function setTheMeat(){
       while (secondsForAllocation >= 0) {
         startAnExercise();
+        iterateExerciseIndex();
         startABreak();
         secondsForAllocation = secondsForAllocation - segmentLength;
-        iterateExerciseIndex();
         exerciseCounter ++;
       }
     }
@@ -114,7 +145,7 @@ features to come:
     function startABreak(){
       events[initialCountDown + exerciseLength  + (exerciseCounter * segmentLength)] = {
         "countDownValue": breakLength,
-        "message": "Break! up next: " + todayExercises[exerciseIndex + 1],
+        "message": "Break! up next: " + todayExercises[exerciseIndex],
         "sound":"beep",
         "type":"break"
       };
@@ -189,36 +220,41 @@ features to come:
     function startPauseButton(){
       console.log("you pressed the button");
       if ( document.getElementById("startPause").innerHTML==="START"){
+        console.log("you pressed start");
+        setWorkoutParameters();
+        setEvents();
         setTimeout(scheduler,0);
         start = setInterval(scheduler, 1000);
+        isPaused = false;
+        hideForm();
         document.getElementById("startPause").innerHTML="PAUSE";
       }
+      else if (isPaused === false) {
+        console.log("you pressed pause");
+        isPaused = true;
+        document.getElementById("startPause").innerHTML="UNPAUSE";
+      }
       else if (isPaused === true) {
+        console.log("you pressed unpause");
+
         isPaused = false;
         document.getElementById("startPause").innerHTML="PAUSE";
       }
       else {
-        isPaused = true;
-        document.getElementById("startPause").innerHTML="UNPAUSE";
+        console.log("you're making a huge mistake");
       }
     }
 
     document.body.onkeyup = function(e){
-      if(e.keyCode == 32){
-        startPauseButton();
+      if(e.keyCode === 32 && masterTime > 0){
+        spaceBar = function(){ startPauseButton();}
       }
     }
 
-    var synth = new Tone.PolySynth().toMaster()
+    function hideForm(){
+      document.getElementById("parameters").style.display="none";
+    }
 
-    function pip(){
-      synth.triggerAttackRelease('E4', '64n');
-      synth.triggerAttackRelease('E5', '64n');
-    }
-    function beep(){
-      synth.triggerAttackRelease('C4', '4n');
-      synth.triggerAttackRelease('C6', '4n');
-    }
     percentage = 0;
 
     function percentageDone(){
@@ -233,6 +269,18 @@ features to come:
         }
       },
       ( absoluteLength - initialCountDown ) * 10);
+    }
+
+// SOUND
+    var synth = new Tone.PolySynth().toMaster()
+
+    function pip(){
+      synth.triggerAttackRelease('E4', '64n');
+      synth.triggerAttackRelease('E5', '64n');
+    }
+    function beep(){
+      synth.triggerAttackRelease('C4', '4n');
+      synth.triggerAttackRelease('C6', '4n');
     }
   </script>
 </body>
