@@ -1,7 +1,6 @@
 <!--
 
 features to come:
-  web audio implemented in tone.js for iphone compatibility
   robot voice or your own voice clips to say the messages
   choose how many pips (and set pips lower if people do super short exercises)
   actual ui instead of params
@@ -58,9 +57,11 @@ features to come:
   <p>b: in seconds, how long you want each break between exercise to last, eg 30</p>
   <p>w: in minutes, how long you want the session to last, eg 20</p>
 
+  <script type="text/javascript" src="https://tonejs.github.io/build/Tone.min.js"></script>
 
-  <script>
-    audioContext = new AudioContext();
+
+<script>
+    //audioContext = new AudioContext();
     var url = new URL(window.location.href);
     document.getElementById("message").innerHTML="Welcome - please consider setting url parameters to customise your workout";
 
@@ -167,10 +168,13 @@ features to come:
         events[masterTime].message ? message = events[masterTime].message : null;
         events[masterTime].message === "Complete" ? workoutComplete = true : null;
         events[masterTime].countDownValue ? countDownTime = events[masterTime].countDownValue : null;
-        events[masterTime].sound === "beep" ? beep(0.5) : null;
+        events[masterTime].sound === "beep" ? synth.triggerAttackRelease('C4', '4n') : null;
+
+
       }
       masterTime === initialCountDown ? percentageDone() : null;
-      countDownTime <= 5 ? beep(0.03) : null;
+      countDownTime <= 5 ? synth.triggerAttackRelease('E4', '64n') : null;
+
       document.getElementById("clock").innerHTML=countDownTime;
       document.getElementById("message").innerHTML=message;
       countDownTime --;
@@ -204,18 +208,7 @@ features to come:
     }
 }
 
-
-    function beep(length) {
-      var startTime = audioContext.currentTime;
-      var endTime = startTime + length;
-      var oscillator = audioContext.createOscillator();
-      oscillator.connect(audioContext.destination);
-      oscillator.type = "square";
-      oscillator.start(startTime);
-      oscillator.stop(endTime);
-    };
-
-
+    var synth = new Tone.Synth().toMaster()
     percentage = 0;
 
     function percentageDone(){
