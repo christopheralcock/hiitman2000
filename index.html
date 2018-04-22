@@ -1,3 +1,12 @@
+<!--
+
+features to come:
+  web audio implemented in tone.js for iphone compatibility
+  robot voice or your own voice clips to say the messages
+  choose how many pips (and set pips lower if people do super short exercises)
+  actual ui instead of params
+
+-->
 <head>
   <style>
     div {
@@ -11,6 +20,9 @@
     }
     #clock {
       font-size: 200px;
+    }
+    #startPause {
+      font-size: 70px;
     }
     p {
       font-size: 15px;
@@ -26,18 +38,19 @@
 </head>
 <body>
   <h1>HIITMAN 2000:</h1>
-<h2>THE SINGLE MOST ADVANCED HIIT WEBSITE</h2>
-    <div id=complete>
-    <div id=currentExercise>
-      You seem to be using a rubbish browser and/or an iPhone. This website won't make any sense, sorry. Working on it, a bit, maybe.
+  <h2>THE SINGLE MOST ADVANCED HIIT WEBSITE</h2>
+  <button type="button" id="startPause" onclick="startPauseButton()">START</button>
 
-    </div>
-    <div id=break>
-    </div>
-    <div id=clock>
-    </div>
-    <div id=percentageDone>
+
+  <div id=message>
+    You seem to be using a rubbish browser and/or an iPhone. This website won't make any sense, sorry. Working on it, a bit, maybe.
   </div>
+  <div id=clock>
+  </div>
+  <div id=percentageDone>
+  </div>
+
+
 
   <p>example params: <a href="?e=squats,press-ups,sit-ups,skipping+rope&t=30&b=30&w=20">?e=squats,press-ups,sit-ups,skipping+rope&t=30&b=30&w=20</a></p>
   <p>e: a comma separated list of the names of the exercises you want to do, eg squats,press-ups,sit-ups,skipping rope</p>
@@ -47,87 +60,176 @@
 
 
   <script>
-  audioContext = new AudioContext();
+    audioContext = new AudioContext();
+    var url = new URL(window.location.href);
+    document.getElementById("message").innerHTML="Welcome - please consider setting url parameters to customise your workout";
 
-  var url_string = window.location.href
-var url = new URL(url_string);
+    todayExercises = ["Mountain Climber","Squatty Floor Touch","Snakey Dog Pressups","Punchy Boys","High Knees!!"];
+    breakLength = 30;
+    exerciseLength = 30;
+    workoutLength = 20*60;
+    url.searchParams.get("e") ? todayExercises = url.searchParams.get("e").split(",") : null;
+    url.searchParams.get("b") ? breakLength = parseInt(url.searchParams.get("b")) : null;
+    url.searchParams.get("t") ? exerciseLength = parseInt(url.searchParams.get("t")) : null;
+    segmentLength = breakLength + exerciseLength;
+    url.searchParams.get("w") ? workoutLength = parseInt(parseFloat(url.searchParams.get("w"))*60) : null;
+    initialCountDown = 5;
+    absoluteLength = workoutLength + initialCountDown;
+    secondsForAllocation = absoluteLength;
+    exerciseIndex = 0;
+    exerciseCounter = 0;
 
-todayExercises = ["Mountain Climber","Squatty Floor Touch","Snakey Dog Pressups","Punchy Boys","High Knees!!"];
-breakLength = 30000;
-exerciseLength = 30000;
-workoutLength = 20*60000;
-  if (url.searchParams.get("e")){
-    todayExercises = url.searchParams.get("e").split(",");
-  }
-  if (url.searchParams.get("b")){
-    breakLength = url.searchParams.get("b")*1000;
-  }
+    events = {};
+    setStart();
+    setTheMeat();
+    setEnd();
+    console.log(events);
 
-  if (url.searchParams.get("t")){
-   exerciseLength = url.searchParams.get("t")*1000;
-  }
-  segmentLength = breakLength + exerciseLength;
+    function setTheMeat(){
+      while (secondsForAllocation >= 0) {
+        startAnExercise();
+        startABreak();
+        secondsForAllocation = secondsForAllocation - segmentLength;
+        iterateExerciseIndex();
+        exerciseCounter ++;
+      }
+    }
 
-  if (url.searchParams.get("w")){
-    workoutLength = url.searchParams.get("w")*60000;
-  }
-  document.getElementById("currentExercise").innerHTML = "Welcome! Stretch a bit and get ready!\r Up first: "+todayExercises[0]+ " in:";
-  document.getElementById("clock").innerHTML = segmentLength/1000;
-  setInterval(countDown, 1000);
-  function countDown(){
-    previousCount = document.getElementById("clock").innerHTML;
-    newCount = previousCount - 1;
-        document.getElementById("clock").innerHTML=newCount;
-  }
-  setInterval(function(){
-    document.getElementById("clock").innerHTML=exerciseLength/1000;
+    function setStart(){
+      events[0] = {
+        "countDownValue": initialCountDown,
+        "message":"Up first: " + todayExercises[0],
+      };
+    }
 
-    lastExercise = document.getElementById("currentExercise").innerHTML;
-    lastExerciseIndex = todayExercises.indexOf(lastExercise);
-    newExerciseIndex = (lastExerciseIndex + 1) % todayExercises.length;
-    nextExerciseIndex = (newExerciseIndex + 1) % todayExercises.length;
-    beep();
-    setTimeout(function(){
-      document.getElementById("break").innerHTML = "BREAK!! up next: "+todayExercises[nextExerciseIndex];
-      beep();
-      document.getElementById("clock").innerHTML=(segmentLength-exerciseLength)/1000;
+    function startAnExercise(){
+      events[initialCountDown + (exerciseCounter * segmentLength)] = {
+        "countDownValue": exerciseLength,
+        "message": todayExercises[exerciseIndex],
+        "type": "exercise",
+        "sound":"beep"
+      };
+    }
+    function startABreak(){
+      events[initialCountDown + exerciseLength  + (exerciseCounter * segmentLength)] = {
+        "countDownValue": breakLength,
+        "message": "Break! up next: " + todayExercises[exerciseIndex + 1],
+        "sound":"beep",
+        "type":"break"
+      };
+    }
 
-    },exerciseLength)
-    setTimeout(function(){
-      document.getElementById("break").innerHTML = "";
-    },segmentLength)
-    document.getElementById("currentExercise").innerHTML = todayExercises[newExerciseIndex];
-  }, segmentLength);
-  setTimeout(function(){
-    document.getElementById("complete").innerHTML = "WORKOUT COMPLETE!";
-    beep();
+    function setEnd(){
+      speculativeEnd = absoluteLength;
+      endSet = false;
+      while (endSet === false) {
+        if (events[speculativeEnd] && events[speculativeEnd].type === "break"){
+          events[speculativeEnd] = {
+            "message": "Complete",
+            "sound": "beep"
+          };
+          absoluteLength = speculativeEnd;
+          endSet = true;
+        }
+        else if (events[speculativeEnd] && events[speculativeEnd].type === "exercise"){
+          events[speculativeEnd + exerciseLength] = {
+            "message": "Complete",
+            "sound":"beep"
+          };
+          absoluteLength = speculativeEnd + exerciseLength;
+          endSet = true;
+        }
+        else {
+          speculativeEnd --;
+        }
+      }
+    }
 
-  }, (workoutLength + segmentLength));
+    function iterateExerciseIndex(){
+      exerciseIndex = (exerciseIndex + 1) % todayExercises.length;
+    }
 
-  setTimeout(function(){ percentageDone() }, segmentLength);
-  percentage = 0;
+    masterTime = 0;
+    countDownTime = 0;
+    message = "";
+    workoutComplete = false;
+    isPaused = false;
 
-  function percentageDone(){
-    document.getElementById("percentageDone").innerHTML = percentage +"% complete";
+    scheduler = function(){
+      if (isPaused === false){
+        workoutComplete === false ? activeScheduler() : endScheduler();
+      }
+    }
 
-    setInterval(function(){
-      percentage++;
-      document.getElementById("percentageDone").innerHTML = percentage +"% complete";
-    },
-    (workoutLength/100)
-  );
+    function activeScheduler(){
+      if (events[masterTime])
+      {
+        events[masterTime].message ? message = events[masterTime].message : null;
+        events[masterTime].message === "Complete" ? workoutComplete = true : null;
+        events[masterTime].countDownValue ? countDownTime = events[masterTime].countDownValue : null;
+        events[masterTime].sound === "beep" ? beep(0.5) : null;
+      }
+      masterTime === initialCountDown ? percentageDone() : null;
+      countDownTime <= 5 ? beep(0.03) : null;
+      document.getElementById("clock").innerHTML=countDownTime;
+      document.getElementById("message").innerHTML=message;
+      countDownTime --;
+      masterTime ++;
+      console.log("it hath happeneth");
+    }
 
-  }
-  function beep() {
-    var startTime = audioContext.currentTime;
-    var endTime = startTime + 0.5;
-    var oscillator = audioContext.createOscillator();
-    oscillator.connect(audioContext.destination);
-    oscillator.type = "square";
-    oscillator.start(startTime);
-    oscillator.stop(endTime);
+    function endScheduler(){
+      document.getElementById("clock").innerHTML="";
+      clearInterval(start);
+    }
+    function startPauseButton(){
+      if ( document.getElementById("startPause").innerHTML==="START"){
+        setTimeout(scheduler,0);
+        start = setInterval(scheduler, 1000);
+        document.getElementById("startPause").innerHTML="PAUSE";
+      }
+      else if (isPaused === true) {
+        isPaused = false;
+        document.getElementById("startPause").innerHTML="PAUSE";
+      }
+      else {
+        isPaused = true;
+        document.getElementById("startPause").innerHTML="UNPAUSE";
+      }
+    }
 
-};
+    document.body.onkeyup = function(e){
+    if(e.keyCode == 32){
+        startPauseButton();
+    }
+}
 
+
+    function beep(length) {
+      var startTime = audioContext.currentTime;
+      var endTime = startTime + length;
+      var oscillator = audioContext.createOscillator();
+      oscillator.connect(audioContext.destination);
+      oscillator.type = "square";
+      oscillator.start(startTime);
+      oscillator.stop(endTime);
+    };
+
+
+    percentage = 0;
+
+    function percentageDone(){
+      document.getElementById("percentageDone").innerHTML = percentage +"%";
+      percentageInterval = setInterval(function(){
+        if (isPaused === false) {
+          percentage++;
+          document.getElementById("percentageDone").innerHTML = percentage +"%";
+          if (percentage == 100) {
+            clearInterval(percentageInterval);
+          }
+        }
+      },
+      ( absoluteLength - initialCountDown ) * 10);
+    }
   </script>
 </body>
