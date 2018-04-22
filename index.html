@@ -11,11 +11,8 @@ features to come:
     div {
         font-size: 50px;
     }
-    #currentExercise {
+    #message {
         color: blue;
-    }
-    #break {
-        color: green;
     }
     #clock {
       font-size: 200px;
@@ -38,7 +35,7 @@ features to come:
 <body>
   <h1>HIITMAN 2000:</h1>
   <h2>THE SINGLE MOST ADVANCED HIIT WEBSITE</h2>
-  <button type="button" id="startPause" onclick="startPauseButton()">START</button>
+  <button type="button" id="startPause" onclick="">START</button>
 
 
   <div id=message>
@@ -170,7 +167,6 @@ features to come:
         events[masterTime].countDownValue ? countDownTime = events[masterTime].countDownValue : null;
         //events[masterTime].sound === "beep" ? synth.triggerAttackRelease('C4', '4n') : null;
 
-
       }
       masterTime === initialCountDown ? percentageDone() : null;
       //countDownTime <= 5 ? synth.triggerAttackRelease('E4', '64n') : null;
@@ -186,7 +182,10 @@ features to come:
       document.getElementById("clock").innerHTML="";
       clearInterval(start);
     }
+
+    document.getElementById("startPause").onclick = function(){startPauseButton()};
     function startPauseButton(){
+      console.log("you pressed the button");
       if ( document.getElementById("startPause").innerHTML==="START"){
         setTimeout(scheduler,0);
         start = setInterval(scheduler, 1000);
@@ -203,10 +202,10 @@ features to come:
     }
 
     document.body.onkeyup = function(e){
-    if(e.keyCode == 32){
+      if(e.keyCode == 32){
         startPauseButton();
+      }
     }
-}
 
     //var synth = new Tone.Synth().toMaster()
     percentage = 0;
