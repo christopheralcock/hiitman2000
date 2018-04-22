@@ -47,7 +47,6 @@ features to come:
   <div id=percentageDone>
   </div>
 
-  <div id=iphoneTest></div>
 
   <p>example params: <a href="?e=squats,press-ups,sit-ups,skipping+rope&t=30&b=30&w=20">?e=squats,press-ups,sit-ups,skipping+rope&t=30&b=30&w=20</a></p>
   <p>e: a comma separated list of the names of the exercises you want to do, eg squats,press-ups,sit-ups,skipping rope</p>
@@ -61,19 +60,21 @@ features to come:
 <script>
     var url = new URL(window.location.href);
     document.getElementById("message").innerHTML="Welcome - please consider setting url parameters to customise your workout";
-    document.getElementById("iphoneTest").innerHTML=navigator.userAgent.indexOf("Safari");
 
     todayExercises = ["Mountain Climber","Squatty Floor Touch","Snakey Dog Pressups","Punchy Boys","High Knees!!"];
     breakLength = 30;
     exerciseLength = 30;
     workoutLength = 20*60;
-
-    // if(navigator.userAgent.indexOf("Safari") != 102){
-    //   url.searchParams.get("e") ? todayExercises = url.searchParams.get("e").split(",") : null;
-    //   url.searchParams.get("b") ? breakLength = parseInt(url.searchParams.get("b")) : null;
-    //   url.searchParams.get("t") ? exerciseLength = parseInt(url.searchParams.get("t")) : null;
-    //   url.searchParams.get("w") ? workoutLength = parseInt(parseFloat(url.searchParams.get("w"))*60) : null;
-    // }
+    safariIndex = navigator.userAgent.indexOf("Safari");
+    if(safariIndex === 125 || safariIndex === 131 || safariIndex === 102){
+      console.log("i haven't worked out how to get url params for this browser");
+    }
+    else{
+      url.searchParams.get("e") ? todayExercises = url.searchParams.get("e").split(",") : null;
+      url.searchParams.get("b") ? breakLength = parseInt(url.searchParams.get("b")) : null;
+      url.searchParams.get("t") ? exerciseLength = parseInt(url.searchParams.get("t")) : null;
+      url.searchParams.get("w") ? workoutLength = parseInt(parseFloat(url.searchParams.get("w"))*60) : null;
+    }
     segmentLength = breakLength + exerciseLength;
     initialCountDown = 5;
     absoluteLength = workoutLength + initialCountDown;
