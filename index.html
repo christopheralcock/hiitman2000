@@ -35,7 +35,7 @@ features to come:
 <body>
   <h1>HIITMAN 2000:</h1>
   <h2>THE SINGLE MOST ADVANCED HIIT WEBSITE</h2>
-  <button type="button" id="startPause" onclick="">START</button>
+  <button type="button" id="startPause">START</button>
 
 
   <div id=message>
@@ -54,11 +54,10 @@ features to come:
   <p>b: in seconds, how long you want each break between exercise to last, eg 30</p>
   <p>w: in minutes, how long you want the session to last, eg 20</p>
 
-  <!--<script type="text/javascript" src="https://tonejs.github.io/build/Tone.min.js"></script>
--->
+  <script type="text/javascript" src="https://tonejs.github.io/build/Tone.min.js"></script>
+
 
 <script>
-    //audioContext = new AudioContext();
     var url = new URL(window.location.href);
     document.getElementById("message").innerHTML="Welcome - please consider setting url parameters to customise your workout";
 
@@ -66,11 +65,13 @@ features to come:
     breakLength = 30;
     exerciseLength = 30;
     workoutLength = 20*60;
-    url.searchParams.get("e") ? todayExercises = url.searchParams.get("e").split(",") : null;
-    url.searchParams.get("b") ? breakLength = parseInt(url.searchParams.get("b")) : null;
-    url.searchParams.get("t") ? exerciseLength = parseInt(url.searchParams.get("t")) : null;
+    if(navigator.userAgent.indexOf("Safari") != 102){
+      url.searchParams.get("e") ? todayExercises = url.searchParams.get("e").split(",") : null;
+      url.searchParams.get("b") ? breakLength = parseInt(url.searchParams.get("b")) : null;
+      url.searchParams.get("t") ? exerciseLength = parseInt(url.searchParams.get("t")) : null;
+      url.searchParams.get("w") ? workoutLength = parseInt(parseFloat(url.searchParams.get("w"))*60) : null;
+    }
     segmentLength = breakLength + exerciseLength;
-    url.searchParams.get("w") ? workoutLength = parseInt(parseFloat(url.searchParams.get("w"))*60) : null;
     initialCountDown = 5;
     absoluteLength = workoutLength + initialCountDown;
     secondsForAllocation = absoluteLength;
@@ -165,11 +166,11 @@ features to come:
         events[masterTime].message ? message = events[masterTime].message : null;
         events[masterTime].message === "Complete" ? workoutComplete = true : null;
         events[masterTime].countDownValue ? countDownTime = events[masterTime].countDownValue : null;
-        //events[masterTime].sound === "beep" ? synth.triggerAttackRelease('C4', '4n') : null;
+        events[masterTime].sound === "beep" ? synth.triggerAttackRelease('C4', '4n') : null;
 
       }
       masterTime === initialCountDown ? percentageDone() : null;
-      //countDownTime <= 5 ? synth.triggerAttackRelease('E4', '64n') : null;
+      countDownTime <= 5 ? synth.triggerAttackRelease('E4', '64n') : null;
 
       document.getElementById("clock").innerHTML=countDownTime;
       document.getElementById("message").innerHTML=message;
@@ -207,7 +208,7 @@ features to come:
       }
     }
 
-    //var synth = new Tone.Synth().toMaster()
+    var synth = new Tone.Synth().toMaster()
     percentage = 0;
 
     function percentageDone(){
