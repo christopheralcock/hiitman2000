@@ -13,6 +13,7 @@ features to come:
     }
     #message {
         color: blue;
+        font-size: 150px;
     }
     #clock {
       font-size: 200px;
@@ -117,6 +118,13 @@ features to come:
       console.log(events);
     }
 
+    function setStart(){
+      events[0] = {
+        "countDownValue": initialCountDown,
+        "message":"Up first: " + todayExercises[0],
+      };
+    }
+
     function setTheMeat(){
       while (secondsForAllocation >= 0) {
         startAnExercise();
@@ -125,13 +133,6 @@ features to come:
         secondsForAllocation = secondsForAllocation - segmentLength;
         exerciseCounter ++;
       }
-    }
-
-    function setStart(){
-      events[0] = {
-        "countDownValue": initialCountDown,
-        "message":"Up first: " + todayExercises[0],
-      };
     }
 
     function startAnExercise(){
