@@ -2,7 +2,6 @@
 
 features to come:
   move away from setInterval entirely and towards webworker https://stackoverflow.com/questions/5927284/how-can-i-make-setinterval-also-work-when-a-tab-is-inactive-in-chrome
-  robot voice or your own voice clips to say the messages
   choose how many pips (and set pips lower if people do super short exercises)
 
 -->
@@ -67,7 +66,7 @@ features to come:
 
   <div id=clock>
   </div>
-  
+
   <button type="button" id="startPause">START</button>
 
 
@@ -200,18 +199,25 @@ features to come:
       if (events[masterTime])
       {
         events[masterTime].message ? message = events[masterTime].message : null;
-        events[masterTime].message === "Complete" ? workoutComplete = true : null;
+        events[masterTime].message === "Complete" ? completeWorkout() : null;
         events[masterTime].countDownValue ? countDownTime = events[masterTime].countDownValue : null;
         events[masterTime].sound === "beep" ? beep() : null;
-
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.speak(new SpeechSynthesisUtterance(message));
+        }
       }
       masterTime === initialCountDown ? percentageDone() : null;
       countDownTime <= 5 ? pip() : null;
 
       document.getElementById("clock").innerHTML=countDownTime;
       document.getElementById("message").innerHTML=message;
+
       countDownTime --;
       masterTime ++;
+    }
+
+    function completeWorkout(){
+      workoutComplete = true;
     }
 
     function endScheduler(){
