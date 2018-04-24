@@ -2,6 +2,7 @@
 
 features to come:
   move away from setInterval entirely and towards webworker https://stackoverflow.com/questions/5927284/how-can-i-make-setinterval-also-work-when-a-tab-is-inactive-in-chrome
+  robot voice or your own voice clips to say the messages
   choose how many pips (and set pips lower if people do super short exercises)
 
 -->
@@ -286,6 +287,9 @@ features to come:
     function pip(){
       synth.triggerAttackRelease('E4', '64n');
       synth.triggerAttackRelease('E5', '64n');
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(countDownTime));
+      }
     }
     function beep(){
       synth.triggerAttackRelease('C4', '4n');
