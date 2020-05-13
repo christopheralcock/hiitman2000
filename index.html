@@ -98,7 +98,7 @@ features to come:
     }
 
     function setWorkoutParameters(){
-      todayExercises = document.getElementById("exercises").value.split(",");
+      todayExercises = document.getElementById("exercises").value.split(",").filter(function (el) {return el != "";});
       exerciseLength = parseInt(document.getElementById("exerciseLength").value);
       breakLength = parseInt(document.getElementById("breakLength").value);
       workoutLength = parseInt(parseFloat(document.getElementById("workoutLength").value)*60);
